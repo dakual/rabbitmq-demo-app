@@ -1,0 +1,19 @@
+{
+    "name": "daghan/frontend",
+    "description": "rabbitmq demo",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "App\\AmqpWrapper\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "daghan",
+            "email": "daghan.altunsoy@gmail.com"
+        }
+    ],
+    "require": {
+        "php-amqplib/php-amqplib": "^3.3"
+    }
+}
