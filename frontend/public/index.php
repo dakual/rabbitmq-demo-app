@@ -12,29 +12,37 @@ if(isset($_POST["action"]))
   $jobdesc = $_POST["jobdesc"] ?? 'None';
   $started = date("d-m-Y H:i:s");
 
-  $msgArray = array(
-    'id'   => "1",
-    'job'  => $jobname,
-    'desc' => $jobdesc,
-    'time' => $started
-  );
-  $message = json_encode($msgArray, JSON_UNESCAPED_SLASHES);
-  $client  = new Client();
-  $client->execute($message);
-
   $insert  = $db->query("INSERT INTO jobs(jobname,jobdesc,startedat) VALUES(:jn,:jd,:sa)", 
     array("jn" => $jobname, "jd" => $jobdesc, "sa" => $started)
   );
 
-  if($insert > 0 ) {
-    print 'Succesfully created a new job !';
+  if($insert > 0 ) 
+  {
+    $msgArray = array(
+      'id'   => "1",
+      'job'  => $jobname,
+      'desc' => $jobdesc,
+      'time' => $started
+    );
+    $message = json_encode($msgArray, JSON_UNESCAPED_SLASHES);
+    $client  = new Client();
+    $client->execute($message);
+  
+    header('Location: index.php'); exit;
   }
-
-  header('Location: index.php');
-  exit;
 }
 
+if(!empty($_GET["delete"])) 
+{
+  $id = $_GET["delete"] ?? null;
 
+  $delete = $db->query("DELETE FROM jobs WHERE Id = :id", array("id"=>$id));
+  if($delete > 0 ) {
+    echo 'Succesfully deleted job from queue!';
+  } else {
+    header('Location: index.php'); exit;
+  }
+}
 
 ?>
 
@@ -65,6 +73,7 @@ if(isset($_POST["action"]))
           <th scope="col">Job Name</th>
           <th scope="col">Started</th>
           <th scope="col">Completed</th>
+          <th scope="col">Actions</th>
         </tr>
       </thead>
       <tbody class="table-group-divider">
@@ -77,6 +86,11 @@ if(isset($_POST["action"]))
           <td><?php echo $job["jobname"];?></td>
           <td><?php echo $job["startedAt"];?></td>
           <td><?php echo !empty($job["completedAt"]) ? $job["completedAt"] : '<img src="/images/loading.gif" class="ajax-loading" /> Processing';?></td>
+          <td>
+            <div class="d-grid gap-2">
+              <?php echo !empty($job["completedAt"]) ? '<a href="" class="btn btn-primary btn-sm">view</a>' : '<a href="?delete='.$job["id"].'" class="btn btn-danger btn-sm">delete</a>';?>
+            </div>
+          </td>
         </tr>
         <?php
         }

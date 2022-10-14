@@ -24,24 +24,50 @@ def main():
       sqlcon.commit()
       cursor.close()
     except sqlite3.Error as error:
-      print("Failed to update sqlite table", error)
+      print("Failed to update sqlite table (1)", error)
     finally:
       if sqlcon:
           sqlcon.close()
+
+  def checkJob(jobname):
+    sqlcon = None
+    result = None
+
+    try:
+      sqlcon = sqlite3.connect(DATABASE)
+      cursor = sqlcon.cursor()
+      cursor.execute("SELECT id FROM jobs WHERE jobname = ?", (jobname,))
+      result = cursor.fetchone()
+      cursor.close()
+    except sqlite3.Error as error:
+      print("Failed to update sqlite table (2)", error)
+    finally:
+      if sqlcon:
+        sqlcon.close()  
+
+    if result:
+      return True
+    else:
+      return False 
   
 
   def callback(ch, method, properties, body):
-    print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' Processing...')
-    print(" [x] Received %r" % body)
-    time.sleep(random.randint(3,8))
     body = json.loads(body)
-    updateJob(body["job"])
-    print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' Processed !')
+    if checkJob(body["job"]):
+      print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' Processing...')
+      print(" [x] Received %r" % body)
+      time.sleep(random.randint(3,8))
+      updateJob(body["job"])
+      print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' Processed !')
+    else:
+      print("Job deleted from queue!")
+
+    ch.basic_ack(delivery_tag=method.delivery_tag)
 
   connection = pika.BlockingConnection(params)
   channel    = connection.channel()
   #channel.queue_declare(queue=QUEUE)
-  channel.basic_consume(queue=QUEUE, on_message_callback=callback, auto_ack=True)
+  channel.basic_consume(queue=QUEUE, on_message_callback=callback, auto_ack=False)
   channel.start_consuming()
 
   while True:
