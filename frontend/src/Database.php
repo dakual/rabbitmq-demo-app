@@ -18,7 +18,7 @@ class Database
     $this->database = $database;
 
     $this->query("CREATE TABLE IF NOT EXISTS `jobs`(
-      id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+      id          TEXT PRIMARY KEY NOT NULL, 
       jobname     TEXT, 
       jobdesc     TEXT, 
       startedAt   TEXT,

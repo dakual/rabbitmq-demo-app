@@ -8,18 +8,19 @@ $db = new Database("../jobs.db");
 
 if(isset($_POST["action"])) 
 {
-  $jobname = $_POST["jobname"] ?? 'None';
-  $jobdesc = $_POST["jobdesc"] ?? 'None';
+  $jobid   = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex(random_bytes(16)), 4));
+  $jobname = !empty($_POST["jobname"]) ? $_POST["jobname"] : 'Job Name';
+  $jobdesc = !empty($_POST["jobdesc"]) ? $_POST["jobdesc"] : 'Job Description';
   $started = date("d-m-Y H:i:s");
 
-  $insert  = $db->query("INSERT INTO jobs(jobname,jobdesc,startedat) VALUES(:jn,:jd,:sa)", 
-    array("jn" => $jobname, "jd" => $jobdesc, "sa" => $started)
+  $insert  = $db->query("INSERT INTO jobs(id,jobname,jobdesc,startedat) VALUES(:jid,:jn,:jd,:sa)", 
+    array("jid" => $jobid, "jn" => $jobname, "jd" => $jobdesc, "sa" => $started)
   );
 
   if($insert > 0 ) 
   {
     $msgArray = array(
-      'id'   => "1",
+      'id'   => $jobid,
       'job'  => $jobname,
       'desc' => $jobdesc,
       'time' => $started

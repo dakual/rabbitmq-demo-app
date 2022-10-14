@@ -12,15 +12,15 @@ def main():
   params = pika.URLParameters(url)
   params.socket_timeout = 5
 
-  def updateJob(jobname):
+  def updateJob(jobid):
     sqlcon    = None
     completed = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S')
 
     try:
-      query  = "UPDATE jobs SET completedAt = ? WHERE jobname = ?;"
+      query  = "UPDATE jobs SET completedAt = ? WHERE id = ?;"
       sqlcon = sqlite3.connect(DATABASE)
       cursor = sqlcon.cursor()
-      cursor.execute(query, (completed, jobname))
+      cursor.execute(query, (completed, jobid))
       sqlcon.commit()
       cursor.close()
     except sqlite3.Error as error:
@@ -29,14 +29,14 @@ def main():
       if sqlcon:
           sqlcon.close()
 
-  def checkJob(jobname):
+  def checkJob(jobid):
     sqlcon = None
     result = None
 
     try:
       sqlcon = sqlite3.connect(DATABASE)
       cursor = sqlcon.cursor()
-      cursor.execute("SELECT id FROM jobs WHERE jobname = ?", (jobname,))
+      cursor.execute("SELECT id FROM jobs WHERE id = ?", (jobid,))
       result = cursor.fetchone()
       cursor.close()
     except sqlite3.Error as error:
@@ -53,11 +53,11 @@ def main():
 
   def callback(ch, method, properties, body):
     body = json.loads(body)
-    if checkJob(body["job"]):
+    if checkJob(body["id"]):
       print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' Processing...')
       print(" [x] Received %r" % body)
       time.sleep(random.randint(3,8))
-      updateJob(body["job"])
+      updateJob(body["id"])
       print(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' Processed !')
     else:
       print("Job deleted from queue!")
