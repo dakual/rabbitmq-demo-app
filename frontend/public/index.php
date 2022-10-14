@@ -87,8 +87,13 @@ if(!empty($_GET["delete"]))
           <td><?php echo $job["startedAt"];?></td>
           <td><?php echo !empty($job["completedAt"]) ? $job["completedAt"] : '<img src="/images/loading.gif" class="ajax-loading" /> Processing';?></td>
           <td>
-            <div class="d-grid gap-2">
-              <?php echo !empty($job["completedAt"]) ? '<a href="" class="btn btn-primary btn-sm">view</a>' : '<a href="?delete='.$job["id"].'" class="btn btn-danger btn-sm">delete</a>';?>
+            <div class="d-grid gap-2 d-md-block">
+              <?php 
+              if (!empty($job["completedAt"])) {
+                echo '<a href="" class="btn btn-primary btn-sm">view</a> ';
+              }
+              echo '<a href="?delete='.$job["id"].'" class="btn btn-danger btn-sm">delete</a>';
+              ?>
             </div>
           </td>
         </tr>
