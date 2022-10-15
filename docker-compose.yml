@@ -4,16 +4,50 @@ services:
     image: rabbitmq:3-management
     container_name: 'rabbitmq'
     ports:
-        - 5672:5672
-        - 15672:15672
+      - 5672:5672
+      - 15672:15672
     volumes:
-        - data:/var/lib/rabbitmq/
-        - data:/var/log/rabbitmq
+      - data:/var/lib/rabbitmq
+      - data:/var/log/rabbitmq
     networks:
-        - rabbitmq_net
+      - rabbitmq_net
     environment:
       RABBITMQ_DEFAULT_USER: admin
       RABBITMQ_DEFAULT_PASS: admin
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  backend:
+    container_name: backend
+    image: backend
+    build:
+      context: .
+      dockerfile: Dockerfile.backend.yml
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      AMQP_URL: "amqp://admin:admin@rabbitmq:5672/%2F"
+      API_URL: "http://frontend:8080/api.php"
+    networks:
+      - rabbitmq_net
+  frontend:
+    container_name: frontend
+    image: frontend
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend.yml
+    environment:
+        AMQP_URL: "amqp://admin:admin@rabbitmq:5672/"
+    networks:
+      - rabbitmq_net
+    ports:
+      - 8080:8080
+    depends_on:
+      - backend
+      - rabbitmq
 networks:
   rabbitmq_net:
     driver: bridge

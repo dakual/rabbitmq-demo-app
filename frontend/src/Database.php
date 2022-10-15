@@ -13,7 +13,7 @@ class Database
   private $parameters;
   private $database;
 
-  public function __construct($database = "test.db")
+  public function __construct($database = "../db/jobs.db")
   {
     $this->database = $database;
 

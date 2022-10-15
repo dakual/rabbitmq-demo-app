@@ -4,7 +4,7 @@ require_once('../vendor/autoload.php');
 use App\AmqpWrapper\Client;
 use App\AmqpWrapper\Database;
 
-$db = new Database("../jobs.db");
+$db = new Database();
 
 if(isset($_POST["action"])) 
 {
@@ -13,7 +13,7 @@ if(isset($_POST["action"]))
   $jobdesc = !empty($_POST["jobdesc"]) ? $_POST["jobdesc"] : 'Job Description';
   $started = date("d-m-Y H:i:s");
 
-  $insert  = $db->query("INSERT INTO jobs(id,jobname,jobdesc,startedat) VALUES(:jid,:jn,:jd,:sa)", 
+  $insert  = $db->query("INSERT INTO jobs(id,jobname,jobdesc,startedAt) VALUES(:jid,:jn,:jd,:sa)", 
     array("jid" => $jobid, "jn" => $jobname, "jd" => $jobdesc, "sa" => $started)
   );
 
@@ -44,6 +44,10 @@ if(!empty($_GET["delete"]))
     header('Location: index.php'); exit;
   }
 }
+
+
+
+
 
 ?>
 
@@ -83,7 +87,7 @@ if(!empty($_GET["delete"]))
         foreach($jobs as $job) {
         ?>
         <tr>
-          <th scope="row"><?php echo $job[0];?></th>
+          <th scope="row"><?php echo $job["id"];?></th>
           <td><?php echo $job["jobname"];?></td>
           <td><?php echo $job["startedAt"];?></td>
           <td><?php echo !empty($job["completedAt"]) ? $job["completedAt"] : '<img src="/images/loading.gif" class="ajax-loading" /> Processing';?></td>
